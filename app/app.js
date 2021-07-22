@@ -28,10 +28,50 @@ const start = () => {
           "Add employee",
           "Add department",
           "Add role",
+          "Update employee role",
           "EXIT"
         ]
       },
-    ])
+    ]).then(function(response) {
+      switch (response.menuChoice) {
+        case "View all employees":
+          employeesViewAll()
+          break
+
+        case "View all departments":
+          departmentsViewAll()
+          break
+
+        case "View all roles":
+          rolesViewAll()
+          break
+
+        case "Add employee":
+          addEmployee()
+          break
+        
+        case "Add department":
+          addDepartment()
+          break
+
+        case "view all roles":
+          viewRoles()
+          break
+
+        case "Add role":
+          addRole()
+          break
+
+        case "Update employee role":
+          updateEmployeeRole()
+          break
+        
+        case "EXIT":
+          connection.end();
+          break;
+        }
+    });
+};
 
 connection.connect((err) => {
   if (err) throw err;
