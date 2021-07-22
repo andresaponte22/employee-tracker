@@ -1,5 +1,6 @@
 const inquirer = require('inquirer')
 const mysql = require('mysql')
+const cTable = require('console.table')
 
 let connection = mysql.createConnection({
   host: 'localhost',
@@ -54,10 +55,6 @@ const start = () => {
           addDepartment()
           break
 
-        case "view all roles":
-          viewRoles()
-          break
-
         case "Add role":
           addRole()
           break
@@ -72,6 +69,54 @@ const start = () => {
         }
     });
 };
+
+
+// functions
+// views all
+function employeesViewAll() {
+  const query = "SELECT employee_id, first_name, last_name, title_name, department_name, salary, manager_id FROM ((role INNER JOIN employee ON role.role_id = employee.role_id) INNER JOIN department ON role.department_id = department.department_id);"
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    console.table(res)
+    start();
+  })
+}
+
+function departmentsViewAll() {
+  const query = "SELECT department_name FROM department;";
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    console.table(res)
+    start();
+})
+}
+
+function rolesViewAll() {
+  const query = "SELECT title, salary, department_name FROM role INNER JOIN department ON role.department_id = department.department_id;";
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    console.table(res)
+    start();
+})
+}
+
+// functions
+// adds
+function addEmployee() {
+  
+}
+
+function addDepartment() {
+  
+}
+
+function addRole() {
+
+}
+
+function updateEmployeeRole() {
+
+}
 
 connection.connect((err) => {
   if (err) throw err;
