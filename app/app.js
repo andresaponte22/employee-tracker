@@ -165,19 +165,8 @@ function addDepartment() {
 })
 }
 
-async function getDepartments() {
-  return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM employee_db.department`;
-    connection.query(query, (err, results) => {
-        if (err) reject(err);
-        resolve(results);
-  })
-})
-}
-
 async function addRole() {
   let query = "SELECT * FROM department";
-  
   connection.query(query, function(err, departments) {
     if (err) throw err;
   inquirer
