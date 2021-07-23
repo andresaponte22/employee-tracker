@@ -10,7 +10,8 @@
 - [Contact Information](#contact-information)
 
 ### Description
-Employee Tracker is a node.js app that lets the heads of a company track their employees through a SQL database. The database holds employee information such as first name, last name, role, and who manages them. There is also department data and role data.
+Employee Tracker is a node.js app that lets the heads of a company track their employees through a SQL database. The database holds employee information such as first name, last name, role, and who manages them. There is also department data and role data./n
+
 ![main menu](https://i.imgur.com/NNwJUbx.png)
 
 ### Installation
