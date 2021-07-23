@@ -22,7 +22,7 @@ const start = () => {
     .prompt([
       {
         name: "menuChoice",
-        type: "list",
+        type: "rawlist",
         message: "What would you like to do? ",
         choices: [
           "View all employees",
@@ -62,7 +62,6 @@ const start = () => {
           break
         
         case "EXIT":
-          connection.end();
           break;
         }
     });
@@ -72,7 +71,7 @@ const start = () => {
 // functions
 // views all
 function employeesViewAll() {
-  const query = "SELECT employee_id, first_name, last_name, title_name, department_name, salary, manager_id FROM ((role INNER JOIN employee ON role.role_id = employee.role_id) INNER JOIN department ON role.department_id = department.department_id);"
+  const query = "SELECT employee_id, first_name, last_name, title, department_name, salary, manager_id FROM ((role INNER JOIN employee ON role.role_id = employee.role_id) INNER JOIN department ON role.department_id = department.department_id);"
   connection.query(query, function(err, res) {
     if (err) throw err;
     console.table(res)
@@ -101,16 +100,9 @@ function rolesViewAll() {
 // functions
 // adds
 function addEmployee() {
-  connection.query('Select * FROM role', async (err, roles) => {
+  connection.query('Select * FROM role', (err, roles) => {
     if (err) throw err; 
-    
-    connection.query('Select * FROM employee WHERE manager_id IS NULL', async (err, managers) => {
-      if (err) throw err; 
-
-    managers = managers.map(manager => ({name:manager.first_name + " " + manager.last_name, value: manager.id}));
-    managers.push({name:"None"});
-
-    const responses = await inquirer
+    inquirer
       .prompt([
         {
           name: "first_name",
@@ -124,10 +116,10 @@ function addEmployee() {
         },
         {
           name: "role_id",
-          type: "list",
+          type: "rawlist",
           message: "What is the employee's role?: ",
           choices: roles.map(role => ({name: role.title, value: role.id}))
-        },
+        }
       ]).then(function(response) {
         connection.query(
           'INSERT INTO employee SET ?',
@@ -143,7 +135,6 @@ function addEmployee() {
           }
       )
     })
-  })
 })
 };
 
@@ -162,7 +153,7 @@ function addDepartment() {
     connection.query(
       "INSERT INTO department SET ?",
       {
-        departmentName: response.name,
+        department_name: response.departmentName,
       },
       function(err) {
         if (err) throw err;
@@ -174,8 +165,22 @@ function addDepartment() {
 })
 }
 
-function addRole() {
+async function getDepartments() {
+  return new Promise((resolve, reject) => {
+    const query = `SELECT * FROM employees_db.department`;
+    connection.query(query, (err, results) => {
+        if (err) reject(err);
+        resolve(results);
+  })
+})
+}
+
+async function addRole() {
   var query = "SELECT title, salary FROM role INNER JOIN department ON role.department_id = department.department_id;";
+  let departments = await getDepartments()
+  
+  connection.query('Select * FROM department', (err, departments) => {
+    if (err) throw err;
     connection.query(query, function(err, results) {
       if (err) throw err;
     inquirer
@@ -183,20 +188,26 @@ function addRole() {
       {
         name: "roleName",
         type: "input",
-        message: "What is the name of the role you would like to add?: "
+        message: "What is the name of the role you would like to add?:"
       },
       {
         name: "roleSalary",
         type: "input",
-        message: "What is the salary for this role?: ",
+        message: "What is the salary for this role?:",
       },
-    ])
-    .then(function(response) {
+      {
+        name: "roleDeptId",
+        type: "list",
+        choices: departments.map(department => department.name),
+        message: "What department does this role belong to?:"
+      },
+    ]).then(function(response) {
       connection.query(
         "INSERT INTO role SET ?",
         {
-          title_name: response.roleName,
+          title: response.roleName,
           salary: response.roleSalary,
+          department_id: response.roleDeptId
         },
         function(err) {
           if (err) throw err;
@@ -206,10 +217,5 @@ function addRole() {
       )
     })
   })
+  })
 };
-
-connection.connect((err) => {
-  if (err) throw err;
-  console.log(`Connected as id ${connection.threadId}`);
-  start();
-});
