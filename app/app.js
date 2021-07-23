@@ -23,7 +23,7 @@ const start = () => {
       {
         name: "menuChoice",
         type: "rawlist",
-        message: "What would you like to do? ",
+        message: "What would you like to do?",
         choices: [
           "View all employees",
           "View all departments",
@@ -107,17 +107,17 @@ function addEmployee() {
         {
           name: "first_name",
           type: "input",
-          message: "What is the employee's first name?: "
+          message: "What is the employee's first name?:"
         },
         {
           name: "last_name",
           type: "input",
-          message: "What is the employee's last name?: "
+          message: "What is the employee's last name?:"
         },
         {
           name: "role_id",
           type: "rawlist",
-          message: "What is the employee's role?: ",
+          message: "What is the employee's role?:",
           choices: roles.map(role => ({name: role.title, value: role.id}))
         }
       ]).then(function(response) {
@@ -146,7 +146,7 @@ function addDepartment() {
     {
       name: "departmentName",
       type: "input",
-      message: "What is the name of the department you would like to add?: "
+      message: "What is the name of the department you would like to add?:"
     },
   ])
   .then(function(response) {
@@ -167,7 +167,7 @@ function addDepartment() {
 
 async function getDepartments() {
   return new Promise((resolve, reject) => {
-    const query = `SELECT * FROM employees_db.department`;
+    const query = `SELECT * FROM employee_db.department`;
     connection.query(query, (err, results) => {
         if (err) reject(err);
         resolve(results);
@@ -176,46 +176,42 @@ async function getDepartments() {
 }
 
 async function addRole() {
-  var query = "SELECT title, salary FROM role INNER JOIN department ON role.department_id = department.department_id;";
-  let departments = await getDepartments()
+  let query = "SELECT * FROM department";
   
-  connection.query('Select * FROM department', (err, departments) => {
+  connection.query(query, function(err, departments) {
     if (err) throw err;
-    connection.query(query, function(err, results) {
-      if (err) throw err;
-    inquirer
-    .prompt([
+  inquirer
+  .prompt([
+    {
+      name: "roleName",
+      type: "input",
+      message: "What is the name of the role you would like to add?:"
+    },
+    {
+      name: "roleSalary",
+      type: "input",
+      message: "What is the salary for this role?:",
+    },
+    {
+      name: "roleDeptId",
+      type: "list",
+      choices: departments.map(department => department.name),
+      message: "What department does this role belong to?:"
+    },
+  ]).then(function(response) {
+    connection.query(
+      "INSERT INTO role SET ?",
       {
-        name: "roleName",
-        type: "input",
-        message: "What is the name of the role you would like to add?:"
+        title: response.roleName,
+        salary: response.roleSalary,
+        department_id: response.roleDeptId
       },
-      {
-        name: "roleSalary",
-        type: "input",
-        message: "What is the salary for this role?:",
-      },
-      {
-        name: "roleDeptId",
-        type: "list",
-        choices: departments.map(department => department.name),
-        message: "What department does this role belong to?:"
-      },
-    ]).then(function(response) {
-      connection.query(
-        "INSERT INTO role SET ?",
-        {
-          title: response.roleName,
-          salary: response.roleSalary,
-          department_id: response.roleDeptId
-        },
-        function(err) {
-          if (err) throw err;
-          console.log("Success: Role created succesfully.")
-          start();
-        }
-      )
-    })
+      function(err) {
+        if (err) throw err;
+        console.log("Success: Role created succesfully.")
+        start();
+      }
+    )
   })
-  })
+}) 
 };
