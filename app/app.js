@@ -99,42 +99,40 @@ function rolesViewAll() {
 
 // functions
 // adds
-function addEmployee() {
-  connection.query('Select * FROM role', (err, roles) => {
+async function addEmployee() {
+  connection.query('Select * FROM role', async (err, roles) => {
     if (err) throw err; 
-    inquirer
+    const responses = await inquirer
       .prompt([
         {
-          name: "first_name",
           type: "input",
-          message: "What is the employee's first name?:"
+          message: "What is the employee's first name?:",
+          name: "first_name"
         },
         {
-          name: "last_name",
           type: "input",
-          message: "What is the employee's last name?:"
+          message: "What is the employee's last name?:",
+          name: "last_name"
         },
         {
-          name: "role_id",
-          type: "rawlist",
-          message: "What is the employee's role?:",
-          choices: roles.map(role => ({name: role.title, value: role.id}))
+          type: "input",
+          message: "What is the employee's role id?:",
+          name: "role_id"
         }
-      ]).then(function(response) {
-        connection.query(
-          'INSERT INTO employee SET ?',
-          {
-            first_name: response.first_name,
-            last_name: response.last_name,
-            role_id: response.role_id
-          },
-          function(err) {
-            if (err) throw err;
-            console.log("Succes: Employee added");
-            start();
-          }
-      )
-    })
+      ]);
+    connection.query(
+        'INSERT INTO employee SET ?',
+        {
+          first_name: responses.first_name,
+          last_name: responses.last_name,
+          role_id: responses.role_id
+        },
+        (err, res) => {
+          if (err) throw err;
+          console.log("Sucess: New employee added.");
+          start();
+        }
+    )
 })
 };
 
@@ -166,41 +164,36 @@ function addDepartment() {
 }
 
 async function addRole() {
-  let query = "SELECT * FROM department";
-  connection.query(query, function(err, departments) {
-    if (err) throw err;
-  inquirer
+  const responses = await inquirer
   .prompt([
     {
-      name: "roleName",
-      type: "input",
-      message: "What is the name of the role you would like to add?:"
+      name: 'title',
+      type: 'input',
+      message: 'What is the new role?:',
     },
     {
-      name: "roleSalary",
-      type: "input",
-      message: "What is the salary for this role?:",
+      name: 'salary',
+      type: 'number',
+      message: "What is the role's salary?:",
     },
     {
-      name: "roleDeptId",
-      type: "list",
-      choices: departments.map(department => department.name),
-      message: "What department does this role belong to?:"
+      name: 'department',
+      type: 'input',
+      message: 'What is the department id the role is in?:'
+    }
+  ])
+
+  connection.query(
+    'INSERT INTO employee_db.role SET ?',
+    {
+      title: responses.title,
+      salary: responses.salary,
+      department_id: responses.department,
     },
-  ]).then(function(response) {
-    connection.query(
-      "INSERT INTO role SET ?",
-      {
-        title: response.roleName,
-        salary: response.roleSalary,
-        department_id: response.roleDeptId
-      },
-      function(err) {
-        if (err) throw err;
-        console.log("Success: Role created succesfully.")
-        start();
-      }
-    )
+    (err) => {
+      if (err) throw err;
+      console.log('Success: New role added')
+      start();
   })
-}) 
-};
+}
+;
